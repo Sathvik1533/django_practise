@@ -49,12 +49,12 @@
 
 Add to README.md:
 ```markdown
-![Django Tests](https://github.com/Sathvik1533/django_practise/actions/workflows/django-tests.yml/badge.svg)
+![Django Tests](https://github.com/Sathvik1533/ecommerce-logistics-platform/actions/workflows/django-tests.yml/badge.svg)
 ```
 
 **View Workflow Results:**
 ```
-https://github.com/Sathvik1533/django_practise/actions
+https://github.com/Sathvik1533/ecommerce-logistics-platform/actions
 ```
 
 ---

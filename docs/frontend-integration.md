@@ -21,7 +21,7 @@ This document provides everything needed to integrate the React frontend with th
 **Steps:**
 ```bash
 # Navigate to project root
-cd /path/to/django_practise
+cd /path/to/ecommerce-logistics-platform
 
 # Install dependencies
 poetry install
@@ -432,7 +432,7 @@ GET /health/
 ### 1. Start Backend First
 ```bash
 # Terminal 1
-cd django_practise
+cd ecommerce-logistics-platform
 poetry run python manage.py runserver
 ```
 

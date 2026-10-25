@@ -1,5 +1,7 @@
 # Django E-Commerce Logistics Engine
 
+![Django Tests](https://github.com/Sathvik1533/ecommerce-logistics-platform/actions/workflows/django-tests.yml/badge.svg)
+
 A backend API for order creation with safe inventory reservation,
 built with Django 6.1, Django REST Framework, and MySQL.
 
@@ -33,8 +35,8 @@ complete slice from HTTP routing to database, including tests.
 ### 1. Clone and install dependencies
 
 ```bash
-git clone <repo-url>
-cd django_practise
+git clone https://github.com/Sathvik1533/ecommerce-logistics-platform.git
+cd ecommerce-logistics-platform
 poetry install
 ```
 
@@ -172,7 +174,7 @@ Other errors: "Product 5 is inactive", "Product 99 has no inventory record"
 ## Project Structure
 
 ```
-django_practise/
+ecommerce-logistics-platform/
 config/                  Django project configuration
   settings.py            All settings, reads from .env
   urls.py                Root URL routing
@@ -228,3 +230,4 @@ Test classes:
 | tasks.md | Task list with status and verification commands |
 | docs/architecture.md | Architecture, data flow, design decisions |
 | docs/learning.md | Plain-English learning journal |
+
