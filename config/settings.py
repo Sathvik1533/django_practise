@@ -146,3 +146,38 @@ STATIC_URL = "static/"
 # ASGI APPLICATION
 # ─────────────────────────────────────────────
 ASGI_APPLICATION = "config.asgi.application"
+
+# ─────────────────────────────────────────────
+# CELERY CONFIGURATION
+# ─────────────────────────────────────────────
+CELERY_BROKER_URL = os.environ.get(
+    'CELERY_BROKER_URL',
+    'redis://localhost:6379/0'
+)
+
+CELERY_RESULT_BACKEND = os.environ.get(
+    'CELERY_RESULT_BACKEND',
+    'redis://localhost:6379/0'
+)
+
+# Task serialization
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+
+# Timezone
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+
+# Task execution settings
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_TASK_TIME_LIMIT = 300  # 5 minutes hard limit
+CELERY_TASK_SOFT_TIME_LIMIT = 240  # 4 minutes soft limit
+
+# Task result expiration
+CELERY_RESULT_EXPIRES = 3600  # 1 hour
+
+# Worker settings
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000

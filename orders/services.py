@@ -68,7 +68,16 @@ def validate_order_items(items):
 
 
 def create_order(items):
-    """Validate products, create an order, and reserve inventory."""
+    """
+    Validate products, create an order, and reserve inventory.
+    
+    After successful order creation, dispatches a background task for
+    fulfillment preparation via transaction.on_commit() to ensure the
+    task only runs after the transaction commits.
+    
+    Returns:
+        Order: The created order instance
+    """
 
     validated_items = validate_order_items(items)
 
@@ -140,5 +149,13 @@ def create_order(items):
                 update_fields=["quantity_reserved"]
             )
 
-        # Step 5: Return the created order.
+        # Step 5: Dispatch background task after transaction commits.
+        # Import here to avoid circular dependencies
+        from orders.tasks import dispatch_order_fulfillment
+        
+        transaction.on_commit(
+            lambda: dispatch_order_fulfillment(order.id)
+        )
+
+        # Step 6: Return the created order.
         return order

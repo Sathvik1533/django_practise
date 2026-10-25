@@ -1,34 +1,57 @@
-# Django E-Commerce Logistics Engine
+# Django E-Commerce Logistics Platform
 
 ![Django Tests](https://github.com/Sathvik1533/ecommerce-logistics-platform/actions/workflows/django-tests.yml/badge.svg)
 
-A backend API for order creation with safe inventory reservation,
-built with Django 6.1, Django REST Framework, and MySQL.
+A hybrid asynchronous/synchronous backend platform for e-commerce order processing with flash-sale-grade inventory correctness, built with Django 6.1, Django REST Framework, Daphne ASGI server, Celery, Redis, and MySQL 8.4.
 
-This project follows Vertical Slice Architecture: each feature owns its
-complete slice from HTTP routing to database, including tests.
+This project follows Vertical Slice Architecture: each feature owns its complete slice from HTTP routing to database, including tests.
+
+## Architecture Overview
+
+### Hybrid Async/Sync Design
+
+- **ASGI Foundation**: Daphne 4.2.3 server for async HTTP handling
+- **Synchronous Core**: Order creation uses `transaction.atomic()` + `select_for_update()` for inventory correctness in flash sale scenarios
+- **Asynchronous Tasks**: Celery 5.6.3 + Redis 5.3.1 for background post-order workflows
+- **Best-Effort Dispatch**: Background tasks dispatched via `transaction.on_commit()` - order succeeds even if Redis is unavailable
+
+### Critical Correctness Properties
+
+1. **Inventory Atomicity**: Synchronous transactions with row-level locking prevent overselling
+2. **Order Availability**: Order creation succeeds regardless of task broker availability
+3. **Task Dispatch Safety**: Tasks only dispatched after order transaction commits (prevents phantom fulfillment)
+
+## Technology Stack
+
+- **Framework**: Django 6.1.1
+- **API**: Django REST Framework 3.18.3
+- **Database**: MySQL 8.4+ with mysqlclient (synchronous driver)
+- **ASGI Server**: Daphne 4.2.3
+- **Task Queue**: Celery 5.6.3
+- **Message Broker**: Redis 5.3.1
+- **Testing**: Django TestCase + TransactionTestCase (37 tests)
+- **CI/CD**: GitHub Actions with MySQL 8.4
 
 ## Project Status
 
-| Stage | Description | Status |
+| Milestone | Description | Status |
 |---|---|---|
-| 0 | Project bootstrap | Done |
-| 1 | Data models and migrations | Done |
-| 2 | Input validation service | Done |
-| 3 | Order creation transaction | Done |
-| 4 | DRF serializer and API view | Done |
-| 5 | CORS configuration | Done |
-| 6 | React frontend | Not started |
-| 7 | JWT authentication | Not started |
-| 8 | Celery + Redis background tasks | Not started |
-| 9 | Deployment | Not started |
+| 0 | Project bootstrap | ✅ Done |
+| 1 | Data models and migrations | ✅ Done |
+| 2 | ASGI Foundation (Daphne + async views) | ✅ Done |
+| 3 | Celery + Redis background tasks | ✅ Done |
+| 4 | Concurrency testing (flash sale simulation) | 🔄 Next |
+| 5 | React frontend integration | ⏳ Not started |
+| 6 | JWT authentication | ⏳ Not started |
+| 7 | Production deployment | ⏳ Not started |
 
 ## Requirements
 
 - Python 3.13
 - Poetry (dependency manager)
-- MySQL 8+ with a database created
-- Node.js 18+ (for frontend, Stage 6+)
+- MySQL 8.4+ with a database created
+- Redis 5.3+ (for background tasks)
+- Node.js 18+ (for frontend, Milestone 5+)
 
 ## Setup
 
@@ -49,7 +72,7 @@ cp .env.example .env
 
 Required variables (see .env.example):
 
-```
+```bash
 SECRET_KEY=your-secret-key
 DEBUG=True
 DB_NAME=ecommerce_logistics
@@ -58,6 +81,7 @@ DB_PASSWORD=your_mysql_password
 DB_HOST=127.0.0.1
 DB_PORT=3306
 CORS_ALLOWED_ORIGINS=http://localhost:3000
+CELERY_BROKER_URL=redis://localhost:6379/0
 ```
 
 ### 3. Create the MySQL database
@@ -72,22 +96,62 @@ CREATE DATABASE ecommerce_logistics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicod
 poetry run python manage.py migrate
 ```
 
-### 5. Start the development server
+### 5. Install and start Redis
 
+**macOS (Homebrew):**
 ```bash
-poetry run python manage.py runserver
+brew install redis
+redis-server
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get install redis-server
+sudo systemctl start redis
+```
+
+**Verify Redis:**
+```bash
+redis-cli ping  # Should respond: PONG
+```
+
+### 6. Start the system (3 terminals)
+
+**Terminal 1: Redis**
+```bash
+redis-server
+```
+
+**Terminal 2: Celery Worker**
+```bash
+poetry run celery -A config worker --loglevel=info
+```
+
+**Terminal 3: Daphne ASGI Server**
+```bash
+poetry run daphne config.asgi:application -b 127.0.0.1 -p 8000
 ```
 
 The API is now available at http://localhost:8000
 
 ## Commands Reference
 
-### Development
+### Development Servers
 
 ```bash
-# Start Django development server
-poetry run python manage.py runserver
+# Start Daphne ASGI server (async-capable)
+poetry run daphne config.asgi:application -b 127.0.0.1 -p 8000
 
+# Start Celery worker
+poetry run celery -A config worker --loglevel=info
+
+# Start Redis (required for background tasks)
+redis-server
+```
+
+### Django Management
+
+```bash
 # Django system check
 poetry run python manage.py check
 
@@ -110,17 +174,35 @@ poetry run python manage.py createsuperuser
 ### Testing
 
 ```bash
-# Run all tests
-poetry run python manage.py test orders.tests
+# Run all tests (37 tests: 27 orders/inventory + 10 task tests + 2 async health)
+poetry run python manage.py test
 
-# Run a specific test class
-poetry run python manage.py test orders.tests.CreateOrderTests
+# Run specific test suites
+poetry run python manage.py test orders.tests        # Order creation tests
+poetry run python manage.py test orders.test_tasks   # Celery task tests
+poetry run python manage.py test config.tests        # Async health check tests
 
-# Run with verbose output (shows each test name)
-poetry run python manage.py test orders.tests --verbosity=2
+# Run with verbose output
+poetry run python manage.py test --verbosity=2
 
 # Run keeping the test database (faster on re-run)
-poetry run python manage.py test orders.tests --keepdb
+poetry run python manage.py test --keepdb
+```
+
+### Celery Monitoring
+
+```bash
+# Check active tasks
+poetry run celery -A config inspect active
+
+# Check worker stats
+poetry run celery -A config inspect stats
+
+# Check registered tasks
+poetry run celery -A config inspect registered
+
+# Check Redis queue length
+redis-cli llen celery
 ```
 
 ### Dependencies
@@ -141,93 +223,195 @@ poetry show
 
 ## API Reference
 
-### Health Check
+### Health Check (Async)
 
-```
+```http
 GET /health/
-Response: {"status": "ok"}
 ```
 
-### Create Order
-
+**Response (200 OK):**
+```json
+{"status": "ok"}
 ```
+
+### Create Order (Sync with Async Task Dispatch)
+
+```http
 POST /api/orders/
 Content-Type: application/json
 ```
 
-Request body:
+**Request body:**
 ```json
-{"items": [{"product_id": 1, "quantity": 2}]}
+{
+  "items": [
+    {"product_id": 1, "quantity": 2}
+  ]
+}
 ```
 
-Success response (201 Created):
+**Success response (201 Created):**
 ```json
-{"order_id": 123, "status": "pending", "items": [{"product_id": 1, "quantity": 2, "unit_price": "1000.00", "line_total": "2000.00"}], "total": "2000.00", "created_at": "2024-01-20T15:30:00Z"}
+{
+  "order_id": 123,
+  "status": "pending",
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 2,
+      "unit_price": "1000.00",
+      "line_total": "2000.00"
+    }
+  ],
+  "total": "2000.00",
+  "created_at": "2024-10-24T15:30:00Z"
+}
 ```
 
-Error responses (400 Bad Request):
+**After successful order creation:**
+- Order transaction commits with reserved inventory
+- `prepare_order_fulfillment` task dispatched to Celery (best-effort)
+- Task logs fulfillment data for warehouse systems
 
-Structure error: {"items": ["This field is required."]}
-Business error: {"error": "Insufficient stock for product 1"}
-Other errors: "Product 5 is inactive", "Product 99 has no inventory record"
+**Error responses (400 Bad Request):**
+```json
+{"items": ["This field is required."]}
+{"error": "Insufficient stock for product 1"}
+{"error": "Product 5 is inactive"}
+{"error": "Product 99 has no inventory record"}
+```
+
+## Background Tasks
+
+### orders.tasks.prepare_order_fulfillment
+
+**Purpose:** Asynchronous fulfillment preparation after order creation
+
+**Trigger:** Automatically dispatched via `transaction.on_commit()` after order commits
+
+**Configuration:**
+- Max retries: 3
+- Retry delay: 60 seconds
+
+**Behavior:**
+- Fetches order with related items
+- Logs fulfillment data (consumed by warehouse systems)
+- Retries on transient failures (network, external API)
+- Does not retry if order doesn't exist
+
+**Example Log Output:**
+```json
+{
+  "order_id": 123,
+  "status": "pending",
+  "item_count": 2,
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "name": "Laptop",
+      "quantity": 1,
+      "unit_price": "999.99"
+    }
+  ],
+  "created_at": "2024-10-24T12:34:56Z"
+}
+```
+
+See [docs/CELERY_WORKER.md](docs/CELERY_WORKER.md) for comprehensive task documentation.
 
 ## Project Structure
 
 ```
 ecommerce-logistics-platform/
-config/                  Django project configuration
-  settings.py            All settings, reads from .env
-  urls.py                Root URL routing
-  views.py               Health check view
-inventory/               Product catalogue and stock
-  models.py              Product, Inventory
-orders/                  Order creation feature (vertical slice)
-  models.py              Order, OrderItem
-  serializers.py         DRF input validation
-  services.py            Business logic, transaction, row locking
-  views.py               HTTP handling
-  urls.py                Order-specific routes
-  tests.py               All tests for this slice
-docs/
-  architecture.md         Architecture and design decisions
-  learning.md             Plain-English learning journal
-PRD.md                   Product requirements
-stages.md                Implementation stages with gates
-tasks.md                 Task list with status
-.env.example             Required environment variables
-pyproject.toml           Python dependencies (Poetry)
-manage.py                Django CLI entry point
+├── config/                  # Django project configuration
+│   ├── settings.py          # Settings with Celery + Redis config
+│   ├── celery.py            # Celery app initialization
+│   ├── asgi.py              # ASGI application entry point
+│   ├── urls.py              # Root URL routing
+│   ├── views.py             # Async health check
+│   └── tests.py             # Async view tests
+├── inventory/               # Product catalogue and stock
+│   ├── models.py            # Product, Inventory
+│   └── tests.py             # Inventory tests
+├── orders/                  # Order creation feature (vertical slice)
+│   ├── models.py            # Order, OrderItem
+│   ├── serializers.py       # DRF input validation
+│   ├── services.py          # Sync transaction + async task dispatch
+│   ├── tasks.py             # Celery background tasks
+│   ├── views.py             # HTTP handling (DRF views)
+│   ├── urls.py              # Order-specific routes
+│   ├── tests.py             # Order creation tests
+│   └── test_tasks.py        # Celery task tests (10 tests)
+├── docs/
+│   ├── ASGI_SERVER.md       # Daphne startup guide
+│   ├── CELERY_WORKER.md     # Celery + Redis guide
+│   ├── architecture.md      # Architecture decisions
+│   ├── api-contract.md      # API specification
+│   ├── database-schema.md   # MySQL schema documentation
+│   ├── frontend-integration.md  # Frontend integration guide
+│   └── learning.md          # Learning journal
+├── .github/
+│   └── workflows/
+│       └── django-tests.yml # CI pipeline with MySQL 8.4
+├── .env.example             # Required environment variables
+├── pyproject.toml           # Python dependencies (Poetry)
+├── poetry.lock              # Dependency lock file
+├── manage.py                # Django CLI entry point
+└── README.md                # This file
 ```
 
 ## Running Tests
 
-Tests run against a real MySQL database (test_ecommerce_logistics).
-Django creates and destroys this database automatically on each test run.
+Tests run against a real MySQL database (`test_ecommerce_logistics`). Django creates and destroys this database automatically on each test run.
 
 ```bash
-poetry run python manage.py test orders.tests
+poetry run python manage.py test
 ```
 
-Expected output:
+**Expected output:**
 ```
+Found 37 test(s).
 Creating test database for alias 'default' ('test_ecommerce_logistics')...
-Ran 18 tests in 0.051s
+.....................................
+----------------------------------------------------------------------
+Ran 37 tests in 0.134s
 OK
+Destroying test database for alias 'default'...
 ```
 
-Test classes:
-- ValidateOrderItemsTests (6 tests) — Pure Python validation, no database
-- CreateOrderTests (4 tests) — Service layer with real MySQL transactions
-- OrderCreateAPITests (8 tests) — Full HTTP to service to database flow
+### Test Coverage
+
+| Test Suite | Count | Purpose |
+|---|---|---|
+| orders.tests.ValidateOrderItemsTests | 6 | Pure Python validation |
+| orders.tests.CreateOrderTests | 4 | Service layer transactions |
+| orders.tests.OrderCreateAPITests | 8 | Full HTTP integration |
+| inventory.tests | 9 | Inventory model tests |
+| orders.test_tasks.TaskRegistrationTest | 2 | Celery task discovery |
+| orders.test_tasks.PrepareOrderFulfillmentTest | 3 | Task execution logic |
+| orders.test_tasks.DispatchOrderFulfillmentTest | 2 | Task dispatch handling |
+| orders.test_tasks.TransactionCommitDispatchTest | 3 | Dispatch timing correctness |
+| config.tests.AsyncHealthCheckTest | 2 | Async view tests |
 
 ## Documentation
 
 | File | Purpose |
 |---|---|
-| README.md | Setup, commands, API reference |
-| PRD.md | Product requirements and acceptance criteria |
-| stages.md | Implementation stages with entry/exit gates |
-| tasks.md | Task list with status and verification commands |
-| docs/architecture.md | Architecture, data flow, design decisions |
-| docs/learning.md | Plain-English learning journal |
+| [README.md](README.md) | Setup, commands, API reference |
+| [docs/ASGI_SERVER.md](docs/ASGI_SERVER.md) | Daphne ASGI server guide |
+| [docs/CELERY_WORKER.md](docs/CELERY_WORKER.md) | Celery + Redis setup, tasks, failure scenarios |
+| [docs/architecture.md](docs/architecture.md) | Architecture decisions |
+| [docs/api-contract.md](docs/api-contract.md) | API specification for frontend |
+| [docs/database-schema.md](docs/database-schema.md) | MySQL schema documentation |
+| [docs/frontend-integration.md](docs/frontend-integration.md) | Frontend integration guide |
 
+## Contributing
+
+This project is currently in active development. The main branch contains stable releases. Development happens on feature branches:
+
+- `feature/async-asgi-foundation` — Async architecture implementation (current)
+- `feature/frontend-dashboard` — React frontend (Antigravity's work)
+
+## License
+
+[Add your license here]
