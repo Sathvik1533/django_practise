@@ -1,0 +1,100 @@
+name: Django Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword
+          MYSQL_DATABASE: test_ecommerce_logistics
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 2.5.1
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-3.13-${{ hashFiles('**/poetry.lock') }}
+
+    - name: Install dependencies
+      run: poetry install --no-interaction
+
+    - name: Wait for MySQL
+      run: |
+        for i in {1..30}; do
+          if mysqladmin ping -h 127.0.0.1 -u root --password=testpassword --silent; then
+            echo "MySQL is ready"
+            break
+          fi
+          echo "Waiting for MySQL..."
+          sleep 2
+        done
+
+    - name: Run Django system checks
+      env:
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+        ALLOWED_HOSTS: localhost,127.0.0.1
+        DB_NAME: test_ecommerce_logistics
+        DB_USER: root
+        DB_PASSWORD: testpassword
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        CORS_ALLOWED_ORIGINS: http://localhost:3000
+      run: poetry run python manage.py check
+
+    - name: Run migrations
+      env:
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+        ALLOWED_HOSTS: localhost,127.0.0.1
+        DB_NAME: test_ecommerce_logistics
+        DB_USER: root
+        DB_PASSWORD: testpassword
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        CORS_ALLOWED_ORIGINS: http://localhost:3000
+      run: poetry run python manage.py migrate --no-input
+
+    - name: Run tests
+      env:
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+        ALLOWED_HOSTS: localhost,127.0.0.1
+        DB_NAME: test_ecommerce_logistics
+        DB_USER: root
+        DB_PASSWORD: testpassword
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        CORS_ALLOWED_ORIGINS: http://localhost:3000
+      run: poetry run python manage.py test --verbosity=2
