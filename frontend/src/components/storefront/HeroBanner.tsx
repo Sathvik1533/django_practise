@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ShieldCheck, Truck, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Truck, RefreshCw, Sparkles, Lock } from 'lucide-react';
 
 interface HeroBannerProps {
   onShopNow: () => void;
@@ -10,11 +10,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onShopNow, onExploreCate
   return (
     <div className="space-y-4">
       {/* Main Campaign Hero Banner */}
-      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#1C1917] via-[#292524] to-[#44403C] text-white shadow-md">
-        {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#E96832]/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#1C1917] via-[#292524] to-[#44403C] text-white shadow-sm">
+        {/* Subtle warm glow background accent */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#E96832]/15 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 items-center min-h-[380px] p-6 sm:p-10 lg:p-12 gap-8">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 items-center p-6 sm:p-10 lg:p-12 gap-8">
           {/* Left Text Column */}
           <div className="md:col-span-7 space-y-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E96832] text-white text-xs font-bold tracking-wider uppercase">
@@ -23,18 +23,18 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onShopNow, onExploreCate
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white font-serif">
-              Timeless Indian Elegance & Modern Urban Style
+              Timeless Indian Elegance &amp; Modern Urban Style
             </h1>
 
             <p className="text-sm sm:text-base text-[#D6D3D1] max-w-xl leading-relaxed">
-              Discover hand-embroidered Anarkali suits, washed denim essentials, athletic footwear, and signature leather accessories. Authoritative live stock reservation backed by Django MySQL transactions.
+              Discover hand-embroidered Anarkali suits, washed denim essentials, athletic footwear, and signature leather accessories delivered straight to your doorstep.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={onShopNow}
-                className="bg-[#E96832] hover:bg-[#D55722] text-white font-semibold text-sm sm:text-base px-6 py-3 rounded-lg flex items-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                className="bg-[#E96832] hover:bg-[#D55722] text-white font-semibold text-sm sm:text-base px-6 py-3 rounded-lg flex items-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
               >
                 <span>Shop All Fashion</span>
                 <ArrowRight className="w-4 h-4" />
@@ -70,19 +70,27 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onShopNow, onExploreCate
           {/* Right Visual Image Showcase Column */}
           <div className="md:col-span-5 flex justify-center">
             <div className="relative w-full max-w-sm">
-              <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-2xl border-4 border-white/10 relative">
+              <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-xl border-2 border-white/20 bg-[#292524] relative">
                 <img
-                  src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80"
+                  src="/images/products/anouk-kurta-1.jpg"
                   alt="Indian Ethnic Festive Kurta Set"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src !== '/images/placeholder-product.svg') {
+                      target.src = '/images/placeholder-product.svg';
+                    }
+                  }}
                   className="w-full h-full object-cover object-top"
                   loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3 p-3 bg-white/90 backdrop-blur-md rounded-lg text-[#242424] flex items-center justify-between">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-3 left-3 right-3 p-3 bg-white/95 backdrop-blur-md rounded-lg text-[#242424] flex items-center justify-between shadow-md">
                   <div>
                     <div className="text-[10px] font-bold uppercase text-[#E96832]">Trending Now</div>
                     <div className="text-xs font-bold truncate">Anouk Floral Anarkali Set</div>
-                    <div className="text-xs font-semibold text-[#18181B]">₹1,499 <span className="line-through text-[#71717A] text-[10px]">₹2,999</span></div>
+                    <div className="text-xs font-semibold text-[#18181B]">
+                      ₹1,499 <span className="line-through text-[#71717A] text-[10px]">₹2,999</span>
+                    </div>
                   </div>
                   <span className="text-[10px] bg-[#E96832] text-white font-bold px-2 py-1 rounded">
                     50% OFF
@@ -128,11 +136,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onShopNow, onExploreCate
 
         <div className="bg-white border border-[#E5E5E2] rounded-xl p-3 flex items-center gap-3 shadow-xs">
           <div className="w-10 h-10 rounded-lg bg-[#E96832]/10 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-[#E96832]" />
+            <Lock className="w-5 h-5 text-[#E96832]" />
           </div>
           <div>
             <div className="text-xs font-bold text-[#242424]">Secure Checkout</div>
-            <div className="text-[11px] text-[#71717A]">Django ACID transactions</div>
+            <div className="text-[11px] text-[#71717A]">256-Bit SSL Protection</div>
           </div>
         </div>
       </div>

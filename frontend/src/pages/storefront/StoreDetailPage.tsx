@@ -9,7 +9,6 @@ import {
   RotateCcw,
   ShieldCheck,
   Check,
-  Info,
 } from 'lucide-react';
 
 interface StoreDetailPageProps {
@@ -81,8 +80,14 @@ export const StoreDetailPage: React.FC<StoreDetailPageProps> = ({
           {/* Main Large Display Image */}
           <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#F4F4F5] border border-[#E5E5E2]">
             <img
-              src={product.images[selectedImageIndex] || product.images[0]}
+              src={product.images[selectedImageIndex] || product.images[0] || '/images/placeholder-product.svg'}
               alt={product.name}
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (target.src !== '/images/placeholder-product.svg') {
+                  target.src = '/images/placeholder-product.svg';
+                }
+              }}
               className="w-full h-full object-cover object-top"
             />
             {product.discountPercent && (
@@ -109,6 +114,12 @@ export const StoreDetailPage: React.FC<StoreDetailPageProps> = ({
                   <img
                     src={img}
                     alt={`${product.name} view ${idx + 1}`}
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (target.src !== '/images/placeholder-product.svg') {
+                        target.src = '/images/placeholder-product.svg';
+                      }
+                    }}
                     className="w-full h-full object-cover object-top"
                   />
                 </button>
@@ -273,7 +284,7 @@ export const StoreDetailPage: React.FC<StoreDetailPageProps> = ({
                   </span>
                 ) : (
                   <span className="text-[#047857] font-medium">
-                    In Stock ({product.available_quantity} available in warehouse)
+                    In Stock ({product.available_quantity} units available)
                   </span>
                 )}
               </div>
@@ -375,17 +386,6 @@ export const StoreDetailPage: React.FC<StoreDetailPageProps> = ({
                 </ul>
               </div>
             )}
-
-            {/* Architecture Transparency Note */}
-            <div className="p-3 bg-amber-50/50 border border-amber-200/60 rounded-xl text-xs text-amber-900 space-y-1">
-              <div className="font-semibold flex items-center gap-1">
-                <Info className="w-3.5 h-3.5 text-amber-700" />
-                Backend Integration Transparency Note
-              </div>
-              <p className="text-[11px] text-amber-800 leading-relaxed">
-                Product ID #{product.id}, Name, Unit Price (₹{product.price}) and available stock ({product.available_quantity} units) correspond to the live Django inventory database. Photography, color swatches, and sizing represent the storefront presentation catalogue.
-              </p>
-            </div>
           </div>
         </div>
       </div>

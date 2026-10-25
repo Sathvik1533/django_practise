@@ -26,6 +26,8 @@ export const StoreProductCard: React.FC<StoreProductCardProps> = ({
     onAddToCart(product, defaultSize, defaultColor);
   };
 
+  const mainImage = product.images[0] || '/images/placeholder-product.svg';
+
   return (
     <div
       onClick={() => onOpenDetail(product)}
@@ -34,10 +36,16 @@ export const StoreProductCard: React.FC<StoreProductCardProps> = ({
       {/* Product Image Container */}
       <div className="relative aspect-[3/4] bg-[#F4F4F5] overflow-hidden">
         <img
-          src={product.images[0]}
+          src={mainImage}
           alt={product.name}
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target.src !== '/images/placeholder-product.svg') {
+              target.src = '/images/placeholder-product.svg';
+            }
+          }}
           className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
+          loading="eager"
         />
 
         {/* Badges Overlay */}
@@ -55,7 +63,7 @@ export const StoreProductCard: React.FC<StoreProductCardProps> = ({
         </div>
 
         {/* Rating Floating Pill */}
-        <div className="absolute bottom-2.5 left-2.5 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded flex items-center gap-1 text-[11px] font-bold text-[#242424] shadow-xs">
+        <div className="absolute bottom-2.5 left-2.5 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded flex items-center gap-1 text-[11px] font-bold text-[#242424] shadow-xs">
           <span>{product.rating}</span>
           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
           <span className="text-[#A1A1AA] text-[10px]">({product.reviewCount})</span>
@@ -93,7 +101,7 @@ export const StoreProductCard: React.FC<StoreProductCardProps> = ({
             )}
           </div>
 
-          {/* Real Inventory Status synced with Django backend */}
+          {/* Inventory Availability */}
           <div className="text-[11px] mb-3">
             {isOutOfStock ? (
               <span className="text-[#DC2626] font-semibold">Out of Stock</span>
@@ -109,7 +117,7 @@ export const StoreProductCard: React.FC<StoreProductCardProps> = ({
           </div>
         </div>
 
-        {/* Shopping Action */}
+        {/* Shopping Action Button */}
         <div className="pt-2 border-t border-[#F0EFEA] flex items-center justify-between gap-2">
           <button
             type="button"

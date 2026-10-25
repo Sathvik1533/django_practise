@@ -81,8 +81,14 @@ export const StoreCartPage: React.FC<StoreCartPageProps> = ({
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-20 h-24 rounded-lg bg-[#F4F4F5] overflow-hidden shrink-0 border border-[#E5E5E2]">
                     <img
-                      src={item.product.images[0]}
+                      src={item.product.images[0] || '/images/placeholder-product.svg'}
                       alt={item.product.name}
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (target.src !== '/images/placeholder-product.svg') {
+                          target.src = '/images/placeholder-product.svg';
+                        }
+                      }}
                       className="w-full h-full object-cover object-top"
                     />
                   </div>

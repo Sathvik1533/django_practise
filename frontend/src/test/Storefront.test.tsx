@@ -173,4 +173,42 @@ describe('Storefront - Customer E-Commerce Experience', () => {
       expect(screen.getByText(/#108/i)).toBeInTheDocument();
     });
   });
+
+  it('expands and collapses the optional How It Works shopping guide', async () => {
+    render(<App />);
+
+    // Initially collapsed
+    expect(screen.queryByText(/Browse & Filter/i)).not.toBeInTheDocument();
+
+    // Click to expand
+    const guideToggle = screen.getByRole('button', { name: /How It Works/i });
+    fireEvent.click(guideToggle);
+
+    // Steps should now be visible
+    expect(screen.getByText(/Browse & Filter/i)).toBeInTheDocument();
+    expect(screen.getByText(/Select & Add/i)).toBeInTheDocument();
+    expect(screen.getByText(/Review & Checkout/i)).toBeInTheDocument();
+    expect(screen.getByText(/Order Confirmation/i)).toBeInTheDocument();
+
+    // Collapse again
+    fireEvent.click(guideToggle);
+    expect(screen.queryByText(/Browse & Filter/i)).not.toBeInTheDocument();
+  });
+
+  it('renders the compact Upcoming Features roadmap clearly marked as planned', async () => {
+    render(<App />);
+
+    // Roadmap title
+    expect(screen.getByText(/Coming Next to Aura Store/i)).toBeInTheDocument();
+
+    // 4 planned features
+    expect(screen.getByText(/Order Tracking & Fulfillment/i)).toBeInTheDocument();
+    expect(screen.getByText(/Low-Stock Inventory Alerts/i)).toBeInTheDocument();
+    expect(screen.getByText(/Shipping & Delivery Management/i)).toBeInTheDocument();
+    expect(screen.getByText(/Operations Analytics/i)).toBeInTheDocument();
+
+    // Verify they are clearly marked as Planned
+    const plannedBadges = screen.getAllByText(/Planned/i);
+    expect(plannedBadges.length).toBeGreaterThanOrEqual(4);
+  });
 });

@@ -15,8 +15,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.5,
     reviewCount: 342,
     images: [
-      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&auto=format&fit=crop&q=80',
+      '/images/products/anouk-kurta-1.jpg',
+      '/images/products/anouk-kurta-2.jpg',
     ],
     description:
       'Crafted from breathable pure cotton, this flared Anarkali kurta features intricate zari yoke embroidery, round neck with keyhole, three-quarter sleeves, matching trousers, and a lightweight printed chiffon dupatta.',
@@ -47,8 +47,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.3,
     reviewCount: 512,
     images: [
-      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80',
+      '/images/products/roadster-denim-1.jpg',
+      '/images/products/roadster-denim-2.jpg',
     ],
     description:
       'A wardrobe essential cut in a contemporary slim fit from medium-wash soft denim. Features twin flap chest pockets, spread collar, curved hemline, and contrast snap buttons.',
@@ -79,8 +79,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.7,
     reviewCount: 189,
     images: [
-      'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&auto=format&fit=crop&q=80',
+      '/images/products/silk-maxi-1.jpg',
+      '/images/products/silk-maxi-2.jpg',
     ],
     description:
       'Elevate festive evenings in this lightweight Chanderi silk maxi dress with a flattering square neckline, smocked bodice, cascading tiered silhouette, and golden foil accents.',
@@ -111,8 +111,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.4,
     reviewCount: 420,
     images: [
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&auto=format&fit=crop&q=80',
+      '/images/products/hrx-shoes-1.jpg',
+      '/images/products/hrx-shoes-2.jpg',
     ],
     description:
       'Engineered with a high-density EVA midsole for maximum impact absorption. The seamless flyknit mesh upper keeps feet ventilated during extended training sessions or everyday runs.',
@@ -143,8 +143,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.6,
     reviewCount: 275,
     images: [
-      'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80',
+      '/images/products/lavie-bag-1.jpg',
+      '/images/products/lavie-bag-2.jpg',
     ],
     description:
       'A sophisticated everyday structured handbag featuring gold-tone metallic hardware, dual rolled top handles, multiple zippered compartments, and an adjustable crossbody strap.',
@@ -175,8 +175,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.8,
     reviewCount: 890,
     images: [
-      'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80',
+      '/images/products/levis-jeans-1.jpg',
+      '/images/products/levis-jeans-2.jpg',
     ],
     description:
       'The modern slim jean with room to move. Added elastane stretch delivers all-day comfort without losing shape. Authentic 5-pocket styling with arcuate stitch on back pockets.',
@@ -207,8 +207,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.6,
     reviewCount: 160,
     images: [
-      'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=800&auto=format&fit=crop&q=80',
+      '/images/products/fabindia-kids-1.jpg',
+      '/images/products/fabindia-kids-2.jpg',
     ],
     description:
       'Comfort-first traditional 3-piece set for celebrations. Includes a breathable slub-cotton kurta, elasticated churidar pyjama, and an eye-catching brocade-weave Nehru waistcoat.',
@@ -238,8 +238,8 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
     rating: 4.4,
     reviewCount: 630,
     images: [
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=800&auto=format&fit=crop&q=80',
+      '/images/products/fastrack-watch-1.jpg',
+      '/images/products/fastrack-watch-2.jpg',
     ],
     description:
       'Features a bright 1.78" AMOLED display, single-chip Bluetooth calling with noise cancellation microphone, 100+ sports modes, 24/7 heart-rate and SpO2 tracking, and 7-day battery life.',
@@ -261,7 +261,7 @@ export const CURATED_STOREFRONT_CATALOGUE: StorefrontProduct[] = [
 
 /**
  * Merge live backend data from GET /api/products/ into storefront catalogue.
- * If backend products exist, their authoritative ID, name, price, and available stock take precedence.
+ * Authoritative fields from backend: id, name, price, available_quantity.
  */
 export function mergeBackendWithStorefront(
   backendProducts: BackendProduct[]

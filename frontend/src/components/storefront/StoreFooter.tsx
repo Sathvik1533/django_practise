@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Truck, RotateCcw, Lock } from 'lucide-react';
+import { ShieldCheck, Truck, RotateCcw, Lock, Layers } from 'lucide-react';
 import type { FashionCategory } from '../../types/storefront';
 
 interface StoreFooterProps {
@@ -43,8 +43,8 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
           <div className="flex items-center gap-3 justify-center sm:justify-start">
             <Lock className="w-6 h-6 text-[#E96832]" />
             <div>
-              <div className="text-xs font-bold text-[#242424]">Secure Django Backend</div>
-              <div className="text-[11px] text-[#71717A]">Atomic stock reservation</div>
+              <div className="text-xs font-bold text-[#242424]">100% Safe Payments</div>
+              <div className="text-[11px] text-[#71717A]">256-Bit SSL protection &amp; COD</div>
             </div>
           </div>
         </div>
@@ -64,7 +64,7 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
                   onClick={() => onSelectCategory('women')}
                   className="hover:text-[#E96832] transition-colors cursor-pointer"
                 >
-                  Women Ethnic & Western
+                  Women Ethnic &amp; Western
                 </button>
               </li>
               <li>
@@ -73,7 +73,7 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
                   onClick={() => onSelectCategory('men')}
                   className="hover:text-[#E96832] transition-colors cursor-pointer"
                 >
-                  Men Casuals & Denim
+                  Men Casuals &amp; Denim
                 </button>
               </li>
               <li>
@@ -82,7 +82,7 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
                   onClick={() => onSelectCategory('kids')}
                   className="hover:text-[#E96832] transition-colors cursor-pointer"
                 >
-                  Kids Traditional & Wear
+                  Kids Traditional &amp; Wear
                 </button>
               </li>
               <li>
@@ -91,7 +91,7 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
                   onClick={() => onSelectCategory('footwear')}
                   className="hover:text-[#E96832] transition-colors cursor-pointer"
                 >
-                  Footwear & Trainers
+                  Footwear &amp; Trainers
                 </button>
               </li>
               <li>
@@ -100,7 +100,7 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
                   onClick={() => onSelectCategory('accessories')}
                   className="hover:text-[#E96832] transition-colors cursor-pointer"
                 >
-                  Watches & Leather Bags
+                  Watches &amp; Leather Bags
                 </button>
               </li>
             </ul>
@@ -121,38 +121,31 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
 
           <div>
             <h4 className="text-xs font-bold text-[#242424] uppercase tracking-wider mb-3">
-              Platform Architecture
+              About Aura Store
             </h4>
             <p className="text-xs text-[#71717A] leading-relaxed mb-3">
-              Full-stack e-commerce logistics platform built with React, Vite, Tailwind CSS, and Django REST Framework. Orders are processed via atomic transactions with row-level locking.
+              Aura Store brings curated Indian ethnic couture, western denim essentials, footwear, and accessories directly to fashion shoppers with authentic quality assurance and instant doorstep delivery.
+            </p>
+            <div className="text-[11px] text-[#A1A1AA]">
+              Free delivery on orders over ₹499 across all pin codes in India.
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold text-[#242424] uppercase tracking-wider mb-3">
+              Logistics &amp; Operations
+            </h4>
+            <p className="text-xs text-[#71717A] leading-relaxed mb-3">
+              Internal fulfillment and inventory control console for warehouse administrators.
             </p>
             <button
               type="button"
               onClick={onOpenOperations}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#F8F7F4] hover:bg-[#EFEFEA] text-[#242424] border border-[#E5E5E2] rounded-md transition-colors cursor-pointer"
             >
-              Open Warehouse Operations →
+              <Layers className="w-3.5 h-3.5 text-[#71717A]" />
+              <span>Warehouse Console →</span>
             </button>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-bold text-[#242424] uppercase tracking-wider mb-3">
-              System Health & Status
-            </h4>
-            <div className="bg-[#F8F7F4] p-3 rounded-lg border border-[#E5E5E2] space-y-1.5 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-[#71717A]">Catalog API:</span>
-                <span className="font-semibold text-[#242424]">GET /api/products/</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[#71717A]">Order Pipeline:</span>
-                <span className="font-semibold text-[#242424]">POST /api/orders/</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[#71717A]">Fulfillment:</span>
-                <span className="font-semibold text-[#047857]">ACID Safe</span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -161,7 +154,7 @@ export const StoreFooter: React.FC<StoreFooterProps> = ({
           <div className="flex items-center gap-4 text-[11px]">
             <span>100% Secure Checkout</span>
             <span>•</span>
-            <span>Visa • Mastercard • RuPay • UPI</span>
+            <span>Visa • Mastercard • RuPay • UPI • Cash on Delivery</span>
           </div>
         </div>
       </div>

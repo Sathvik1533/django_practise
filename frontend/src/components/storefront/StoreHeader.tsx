@@ -212,8 +212,8 @@ export const StoreHeader: React.FC<StoreHeaderProps> = ({
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2 pl-4 text-xs">
-            <span className="bg-[#10B981]/15 text-[#047857] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
-              ● Live Django Sync
+            <span className="bg-[#10B981]/15 text-[#047857] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">
+              ✓ 100% Genuine Brands
             </span>
           </div>
         </div>

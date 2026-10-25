@@ -195,15 +195,15 @@ export const StoreListingPage: React.FC<StoreListingPageProps> = ({
             </label>
           </div>
 
-          {/* Backend Info Box */}
+          {/* Customer Assurance Box */}
           <div className="pt-4 border-t border-[#E5E5E2]">
             <div className="p-3 bg-[#F8F7F4] border border-[#E5E5E2] rounded-lg text-xs space-y-1">
               <div className="font-semibold text-[#242424] flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-[#E96832]" />
-                Live API Integrity
+                Customer Assurance
               </div>
               <p className="text-[#71717A] text-[11px] leading-relaxed">
-                Stock counts are informational and committed securely when placing orders through Django REST API.
+                Enjoy 7-day hassle-free doorstep returns and 100% genuine brand guarantee on all items.
               </p>
             </div>
           </div>

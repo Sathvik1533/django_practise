@@ -90,7 +90,7 @@ export const StoreCheckoutPage: React.FC<StoreCheckoutPageProps> = ({
               Thank You for Your Order!
             </h1>
             <p className="text-xs sm:text-sm text-[#71717A]">
-              Your order has been committed to the Django logistics backend via atomic transaction.
+              Your order has been placed successfully and is being prepared for dispatch.
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export const StoreCheckoutPage: React.FC<StoreCheckoutPageProps> = ({
 
             <div className="flex items-center justify-between border-b border-[#E5E5E2] pb-3">
               <div>
-                <span className="text-[#71717A]">Committed Backend Total:</span>
+                <span className="text-[#71717A]">Order Total Paid:</span>
                 <span className="font-extrabold text-base text-[#242424] ml-2">
                   ₹{parseFloat(confirmedOrder.total).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
@@ -401,7 +401,7 @@ export const StoreCheckoutPage: React.FC<StoreCheckoutPageProps> = ({
                 </span>
               </div>
               <p className="text-[10px] text-[#A1A1AA] pt-1">
-                *Final authoritative total is calculated and locked by the Django backend upon order submission.
+                *Order totals and inventory reservations are confirmed upon order placement.
               </p>
             </div>
 
@@ -429,7 +429,7 @@ export const StoreCheckoutPage: React.FC<StoreCheckoutPageProps> = ({
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-[#E96832]" />
-                  <span>Committing Transaction...</span>
+                  <span>Processing Order...</span>
                 </>
               ) : (
                 <>
@@ -441,7 +441,7 @@ export const StoreCheckoutPage: React.FC<StoreCheckoutPageProps> = ({
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#71717A] pt-1">
               <ShieldCheck className="w-4 h-4 text-[#047857]" />
-              <span>Atomic MySQL Transaction • Safe Order Lock</span>
+              <span>100% Safe &amp; Secure Checkout • 256-Bit SSL</span>
             </div>
           </div>
         </div>

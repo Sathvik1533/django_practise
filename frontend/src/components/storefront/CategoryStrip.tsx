@@ -15,36 +15,31 @@ const CATEGORY_ITEMS: {
   {
     id: 'women',
     name: 'Ethnic & Western',
-    image:
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400&auto=format&fit=crop&q=80',
+    image: '/images/categories/women.jpg',
     offerText: 'Up to 60% Off',
   },
   {
     id: 'men',
     name: 'Casual & Denim',
-    image:
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&auto=format&fit=crop&q=80',
+    image: '/images/categories/men.jpg',
     offerText: 'Min 40% Off',
   },
   {
     id: 'kids',
     name: 'Junior Fashion',
-    image:
-      'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400&auto=format&fit=crop&q=80',
+    image: '/images/categories/kids.jpg',
     offerText: 'From ₹499',
   },
   {
     id: 'footwear',
     name: 'Shoes & Sneakers',
-    image:
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80',
+    image: '/images/categories/footwear.jpg',
     offerText: 'Flat 45% Off',
   },
   {
     id: 'accessories',
-    name: 'Bags & Smartwatches',
-    image:
-      'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format&fit=crop&q=80',
+    name: 'Bags & Watches',
+    image: '/images/categories/accessories.jpg',
     offerText: 'Up to 55% Off',
   },
 ];
@@ -56,7 +51,7 @@ export const CategoryStrip: React.FC<CategoryStripProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-[#242424] tracking-tight">
+        <h2 className="text-base sm:text-lg font-bold text-[#242424] tracking-tight">
           Shop by Department
         </h2>
         <span className="text-xs text-[#71717A]">Curated Indian Fashion Catalogue</span>
@@ -76,12 +71,18 @@ export const CategoryStrip: React.FC<CategoryStripProps> = ({
                   : 'border-[#E5E5E2] bg-white hover:border-[#D4D4D8] hover:shadow-xs'
               }`}
             >
-              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-[#F4F4F5]">
+              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-[#F4F4F5] border border-[#E5E5E2]">
                 <img
                   src={item.image}
                   alt={item.name}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src !== '/images/placeholder-product.svg') {
+                      target.src = '/images/placeholder-product.svg';
+                    }
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
+                  loading="eager"
                 />
               </div>
               <div className="min-w-0">

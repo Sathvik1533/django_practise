@@ -2,6 +2,8 @@ import React from 'react';
 import { HeroBanner } from '../../components/storefront/HeroBanner';
 import { CategoryStrip } from '../../components/storefront/CategoryStrip';
 import { StoreProductCard } from '../../components/storefront/StoreProductCard';
+import { ShoppingGuide } from '../../components/storefront/ShoppingGuide';
+import { UpcomingRoadmap } from '../../components/storefront/UpcomingRoadmap';
 import type { StorefrontProduct, FashionCategory } from '../../types/storefront';
 import { ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 
@@ -40,7 +42,10 @@ export const StoreHomePage: React.FC<StoreHomePageProps> = ({
         }}
       />
 
-      {/* 2. Department Category Strip */}
+      {/* 2. Optional Expandable Shopping Guide (Discreet, Collapsed by Default) */}
+      <ShoppingGuide />
+
+      {/* 3. Department Category Strip */}
       <CategoryStrip
         selectedCategory={selectedCategory}
         onSelectCategory={(cat) => {
@@ -49,7 +54,7 @@ export const StoreHomePage: React.FC<StoreHomePageProps> = ({
         }}
       />
 
-      {/* 3. Festive Super Deals Section (Best Sellers) */}
+      {/* 4. Festive Super Deals Section (Best Sellers) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -57,7 +62,7 @@ export const StoreHomePage: React.FC<StoreHomePageProps> = ({
               <Sparkles className="w-4 h-4 text-[#E96832]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#242424] tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-[#242424] tracking-tight">
                 Festive Deals of the Day
               </h2>
               <p className="text-xs text-[#71717A]">
@@ -100,7 +105,7 @@ export const StoreHomePage: React.FC<StoreHomePageProps> = ({
         )}
       </section>
 
-      {/* 4. Trending New Season Arrivals */}
+      {/* 5. Trending New Season Arrivals */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -108,7 +113,7 @@ export const StoreHomePage: React.FC<StoreHomePageProps> = ({
               <TrendingUp className="w-4 h-4 text-[#047857]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#242424] tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-[#242424] tracking-tight">
                 Trending New Arrivals
               </h2>
               <p className="text-xs text-[#71717A]">
@@ -140,17 +145,17 @@ export const StoreHomePage: React.FC<StoreHomePageProps> = ({
         </div>
       </section>
 
-      {/* 5. Indian Fashion Editorial Highlight Banner */}
-      <div className="bg-[#FAF7F2] border border-[#EBE6DD] rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* 6. Indian Fashion Editorial Highlight Banner */}
+      <div className="bg-[#FAF7F2] border border-[#EBE6DD] rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
         <div className="space-y-2 max-w-xl">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#E96832]">
             Authentic Craftsmanship
           </span>
           <h3 className="text-2xl font-bold text-[#242424] font-serif">
-            Pure Indian Cottons & Handloom Weaves
+            Pure Indian Cottons &amp; Handloom Weaves
           </h3>
           <p className="text-xs sm:text-sm text-[#71717A] leading-relaxed">
-            Every garment in our festive collection is manufactured by certified artisans and verified suppliers. Backed by end-to-end inventory tracking and atomic database order locks.
+            Every garment in our festive collection is manufactured by certified artisans and verified suppliers. Designed for elegance, breathability, and all-day comfort.
           </p>
         </div>
         <button
@@ -161,6 +166,9 @@ export const StoreHomePage: React.FC<StoreHomePageProps> = ({
           Explore Ethnic Collection
         </button>
       </div>
+
+      {/* 7. Upcoming Platform Roadmap (Subordinate, Clearly Marked Planned) */}
+      <UpcomingRoadmap />
     </div>
   );
 };
