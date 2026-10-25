@@ -1,524 +1,437 @@
 # Deployment Guide
 
-**Target Environment:** Production (undefined — see Blockers)  
-**CI/CD:** GitHub Actions  
-**Database:** MySQL 8.0+  
-**Application Server:** Not yet configured
+## Overview
 
----
+This document covers deployment scenarios for the E-commerce Logistics Platform:
+- **Local Development**: Single machine with all services
+- **CI Verification**: GitHub Actions with MySQL 8.4
+- **Production Deployment**: Distributed services on cloud infrastructure
 
-## CI/CD Pipeline
+## Local Development Stack (All on One Machine)
 
-### GitHub Actions Workflow
+### Prerequisites
 
-**Location:** `.github/workflows/django-tests.yml`
+- Python 3.13
+- Poetry
+- MySQL 8.4
+- Redis 5.3+
+- macOS, Linux, or Windows Subsystem for Linux (WSL)
 
-**Triggers:**
-- Push to `main` branch
-- Pull requests targeting `main`
+### Step 1: Clone and Install
 
-**Pipeline Steps:**
-
-1. **Checkout Code** — fetches the repository
-2. **Set Up Python 3.13** — installs Python runtime
-3. **Install Poetry** — installs Poetry 2.5.1 for dependency management
-4. **Cache Dependencies** — caches `.venv` to speed up subsequent runs
-5. **Install Dependencies** — runs `poetry install`
-6. **Start MySQL Service** — GitHub Actions service container with MySQL 8.0
-7. **Wait for MySQL** — health check with retry loop
-8. **Run Django System Checks** — `python manage.py check`
-9. **Run Migrations** — `python manage.py migrate` against test database
-10. **Run Tests** — `python manage.py test --verbosity=2` (all 25 tests)
-
-**Test Database:**
-- MySQL 8.0 service container
-- Database: `test_ecommerce_logistics`
-- User: `root`
-- Password: `testpassword` (CI only, not in production)
-- Host: `127.0.0.1`
-- Port: `3306`
-
-**CI Environment Variables:**
-- `SECRET_KEY`: `test-secret-key-for-ci` (CI only)
-- `DEBUG`: `True` (CI only)
-- `ALLOWED_HOSTS`: `localhost,127.0.0.1`
-- `DB_*`: MySQL connection details
-- `CORS_ALLOWED_ORIGINS`: `http://localhost:3000`
-
-**Status Badge:**
-
-Add to README.md:
-```markdown
-![Django Tests](https://github.com/Sathvik1533/ecommerce-logistics-platform/actions/workflows/django-tests.yml/badge.svg)
-```
-
-**View Workflow Results:**
-```
-https://github.com/Sathvik1533/ecommerce-logistics-platform/actions
-```
-
----
-
-## Deployment Architecture (Planned)
-
-### Current Status: NOT DEPLOYED
-
-**Blockers:**
-1. No production hosting environment configured (AWS, Render, Railway, DigitalOcean, etc.)
-2. No production database provisioned
-3. No DNS domain registered
-4. No TLS/SSL certificate configured
-5. No deployment credentials (AWS keys, Render API token, etc.)
-
-### Proposed Architecture
-
-**Option A: Railway (Recommended for MVP)**
-
-```
-User → DNS → Railway Edge → Gunicorn → Django → Railway MySQL
-                  ↓
-               TLS Termination
-```
-
-**Advantages:**
-- Zero-config MySQL database
-- Automatic HTTPS/TLS
-- GitHub integration (auto-deploy on push)
-- Free tier available
-- No infrastructure management
-
-**Option B: AWS (Production-grade)**
-
-```
-User → Route 53 → ALB → EC2/ECS → Django → RDS MySQL
-         (DNS)    (TLS)  (Gunicorn)      (Managed DB)
-```
-
-**Advantages:**
-- Full control
-- Scalability
-- VPC network isolation
-- Managed RDS with automated backups
-
-**Disadvantages:**
-- More complex setup
-- Higher cost
-- Requires AWS expertise
-
----
-
-## Request Flow (Production)
-
-### DNS Resolution
-
-1. **User enters domain** (e.g., `https://ecommerce-api.example.com`)
-2. **Browser queries DNS** for `ecommerce-api.example.com`
-3. **DNS resolver returns** an IP address (e.g., `34.123.45.67`) or CNAME record pointing to the hosting provider's load balancer
-4. **Browser establishes TCP connection** to that IP address on port 443 (HTTPS)
-
-**What DNS Does:**
-- Translates domain names to IP addresses (or other DNS records like CNAME, ALIAS)
-- Does NOT translate "English words to computer-readable integers" — it maps names to network addresses
-
-**What DNS Does NOT Do:**
-- Inspect URL paths (`/api/products/`)
-- Process HTTP requests
-- Execute application logic
-- Translate URLs to arbitrary numbers
-
-**IP Address vs Domain Name:**
-- **IP Address**: Numeric network address (e.g., `192.168.1.1`) identifying a machine on the internet
-- **Domain Name**: Human-readable label (e.g., `example.com`) that maps to an IP via DNS
-- **URL**: Complete resource locator including protocol, domain, path (e.g., `https://example.com/api/products/`)
-
-### HTTPS/TLS Termination
-
-1. **Browser initiates TLS handshake** with the server at the resolved IP
-2. **Server presents TLS certificate** (validated against domain name)
-3. **Encrypted tunnel established** (all HTTP traffic encrypted)
-
-**Where TLS Terminates:**
-- Railway/Render: At the edge proxy (automatic)
-- AWS: At the Application Load Balancer (ALB) or CloudFront
-- Self-hosted: At Nginx reverse proxy
-
-### Reverse Proxy / Load Balancer
-
-1. **Decrypts HTTPS** (if TLS terminated here)
-2. **Routes request** to application server (Gunicorn)
-3. **May perform:**
-   - Load balancing across multiple app instances
-   - Rate limiting
-   - Request logging
-   - Static file serving (if configured)
-
-**Examples:**
-- Railway: Built-in edge proxy
-- AWS: Application Load Balancer (ALB)
-- Self-hosted: Nginx
-
-### Application Server (Gunicorn)
-
-1. **Receives HTTP request** from reverse proxy
-2. **Spawns/reuses worker process** to handle request
-3. **Passes request to Django** via WSGI interface
-
-**Gunicorn Configuration (example):**
 ```bash
-gunicorn config.wsgi:application \
-  --workers 4 \
-  --bind 0.0.0.0:8000 \
-  --timeout 30 \
-  --access-logfile -
+git clone https://github.com/Sathvik1533/ecommerce-logistics-platform.git
+cd ecommerce-logistics-platform
+poetry install
 ```
 
-### Django Application
+### Step 2: Configure Environment
 
-1. **URL Routing** — `config/urls.py` matches path to view
-2. **Middleware** — CORS, sessions, security (runs before view)
-3. **View Execution** — `OrderCreateView`, `ProductListView`, etc.
-4. **Service Layer** — `create_order()` business logic
-5. **Database Query** — ORM translates to SQL, executes against MySQL
-6. **MySQL Transaction** — `transaction.atomic()`, row locks, commit/rollback
-7. **Response Serialization** — DRF serializer converts models to JSON
-8. **HTTP Response** — status code, headers, JSON body
+```bash
+cp .env.example .env
+# Edit .env with:
+SECRET_KEY=generate-a-long-random-string-for-production
+DEBUG=True
+DB_NAME=ecommerce_logistics
+DB_USER=your_mysql_user
+DB_PASSWORD=your_mysql_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+CELERY_BROKER_URL=redis://localhost:6379/0
+```
 
-### Response Path
+### Step 3: Create MySQL Database
 
-1. Django → Gunicorn → Reverse Proxy → TLS encryption → DNS (reverse lookup not needed) → User's browser
+```bash
+mysql -u root -p -e "CREATE DATABASE ecommerce_logistics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
 
-### Complete Request Lifecycle Example
+### Step 4: Run Migrations
 
-**User Action:** `POST https://ecommerce-api.example.com/api/orders/`
+```bash
+poetry run python manage.py migrate
+```
 
-1. **DNS Query:** Browser resolves `ecommerce-api.example.com` → `34.123.45.67`
-2. **TCP Connection:** Browser connects to `34.123.45.67:443`
-3. **TLS Handshake:** Encrypted channel established, certificate validated
-4. **HTTP Request:** `POST /api/orders/` with JSON body sent over encrypted channel
-5. **Reverse Proxy:** Decrypts, forwards to Gunicorn at `http://127.0.0.1:8000/api/orders/`
-6. **Gunicorn:** Passes request to Django worker
-7. **Django Routing:** `config/urls.py` → `orders/urls.py` → `OrderCreateView`
-8. **Middleware:** CORS check (origin allowed), authentication (future JWT)
-9. **View:** Deserializes JSON, calls `create_order(items)`
-10. **Service:** `transaction.atomic()` starts, `select_for_update()` locks inventory
-11. **MySQL:** Executes `SELECT ... FOR UPDATE`, `INSERT`, `UPDATE` queries
-12. **Transaction Commit:** All changes persisted atomically
-13. **Serializer:** `OrderSerializer` converts Order model to JSON
-14. **Response:** HTTP 201 with JSON body
-15. **Gunicorn → Reverse Proxy:** Returns response
-16. **TLS Encryption:** Response encrypted
-17. **Browser:** Receives 201, decrypts, parses JSON, displays order confirmation
+### Step 5: Start All Services (5 Terminal Windows)
 
----
+**Terminal 1: MySQL**
+```bash
+# Already running as system service or start if needed
+mysql.server start
+```
 
-## Environment Variables (Production)
+**Terminal 2: Redis**
+```bash
+redis-server
+# Expected: [3306] 24 Oct 2026 12:00:00.000 * Ready to accept connections
+```
 
-**Required Environment Variables:**
+**Terminal 3: Celery Worker**
+```bash
+poetry run celery -A config worker --loglevel=info
+# Expected: [tasks]
+#   . config.celery.debug_task
+#   . orders.tasks.prepare_order_fulfillment
+# [INFO/MainProcess] Connected to redis://localhost:6379/0
+```
 
-| Variable | Description | Example |
-|---|---|---|
-| `SECRET_KEY` | Django secret key (must be random, 50+ chars) | `<random-string>` |
-| `DEBUG` | **Must be False in production** | `False` |
-| `ALLOWED_HOSTS` | Comma-separated list of allowed domains | `ecommerce-api.example.com,api.example.com` |
-| `DB_NAME` | MySQL database name | `ecommerce_logistics_prod` |
-| `DB_USER` | MySQL username | `django_user` |
-| `DB_PASSWORD` | MySQL password (secret) | `<strong-password>` |
-| `DB_HOST` | MySQL host | `prod-db.example.com` or `127.0.0.1` |
-| `DB_PORT` | MySQL port | `3306` |
-| `CORS_ALLOWED_ORIGINS` | Frontend origin(s) | `https://ecommerce-frontend.example.com` |
+**Terminal 4: Daphne ASGI Server**
+```bash
+poetry run daphne config.asgi:application -b 127.0.0.1 -p 8000
+# Expected: Starting server process [pid ...] 
+# Listening on TCP address 127.0.0.1:8000
+```
 
-**Additional Variables (when JWT/Redis/Celery are added):**
+**Terminal 5: (Optional) Django Shell or Testing**
+```bash
+poetry run python manage.py shell
+# Or run tests:
+poetry run python manage.py test
+```
 
-| Variable | Description |
-|---|---|
-| `JWT_ACCESS_TOKEN_LIFETIME` | JWT access token validity (minutes) |
-| `JWT_REFRESH_TOKEN_LIFETIME` | JWT refresh token validity (days) |
-| `REDIS_URL` | Redis connection string for Celery |
-| `CELERY_BROKER_URL` | Celery message broker URL |
+### Step 6: Verify APIs
 
-**Security Notes:**
-- **NEVER commit `.env` to Git**
-- Use hosting provider's secret management (Railway secrets, AWS Secrets Manager, etc.)
-- Rotate `SECRET_KEY` if exposed
-- Use strong database passwords (16+ characters, mixed case, numbers, symbols)
+```bash
+# Health check
+curl http://localhost:8000/health/
+# Expected: {"status":"ok"}
 
----
+# List products
+curl http://localhost:8000/api/products/
+# Expected: [{"id":1,"sku":"...","name":"...","price":"...","available_quantity":...}, ...]
 
-## Migration Procedure
+# Create order
+curl -X POST http://localhost:8000/api/orders/ \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"product_id":1,"quantity":1}]}'
+# Expected: {"order_id":1,"status":"pending",...}
+```
+
+## CI/CD Verification (GitHub Actions)
+
+The project includes a GitHub Actions workflow at `.github/workflows/django-tests.yml`.
+
+### Workflow Configuration
+
+- **Trigger**: Push to `main` or pull request to `main`
+- **Runner**: Ubuntu Latest
+- **Services**: MySQL 8.4 (container), Python 3.13
+- **Steps**:
+  1. Checkout code
+  2. Install Python 3.13
+  3. Install Poetry
+  4. Cache dependencies
+  5. Wait for MySQL to be ready
+  6. Run Django system checks
+  7. Apply migrations
+  8. Run full test suite (48 tests)
+
+### Running CI Locally
+
+To test CI locally before pushing:
+
+```bash
+# Install act (GitHub Actions runner)
+brew install act
+
+# Run workflow
+act push -j test
+```
+
+### Latest CI Run
+
+- **URL**: https://github.com/Sathvik1533/ecommerce-logistics-platform/actions
+- **Latest Status**: Check the Actions tab for most recent run
+- **Expected Result**: ✅ All tests passing, 0 failures
+
+### CI Environment Variables
+
+The workflow sets these for testing:
+
+```yaml
+SECRET_KEY: test-secret-key-for-ci
+DEBUG: True
+DB_NAME: test_ecommerce_logistics
+DB_USER: root
+DB_PASSWORD: testpassword
+DB_HOST: 127.0.0.1
+CELERY_BROKER_URL: redis://localhost:6379/0  # Note: Not running in CI
+```
+
+## Production Deployment Architecture
+
+### Components and Hosting
+
+#### Frontend (React + TypeScript + Vite)
+
+- **Hosting**: Vercel
+- **Repository**: Separate `feature/frontend-dashboard` branch (not yet deployed)
+- **Environment Variables**:
+  ```
+  VITE_API_URL=https://api.example.com  # Your production Django URL
+  ```
+- **Build**: `npm run build` (Vite)
+- **Deployment**: Push to `main` on frontend repo triggers Vercel deployment
+
+#### Backend API (Django + Daphne)
+
+- **Hosting**: AWS EC2, Heroku, or similar
+- **Process**: Daphne ASGI server (NOT development runserver)
+- **Port**: 8000 (or proxy through nginx/cloudflare)
+- **Process Manager**: Supervisor, systemd, or container orchestration
+
+**Daphne Startup (Production)**:
+```bash
+poetry run daphne config.asgi:application -b 0.0.0.0 -p 8000 --verbosity 1
+```
+
+#### Database (MySQL 8.4)
+
+- **Hosting**: AWS RDS, Google Cloud SQL, or managed MySQL service
+- **Configuration**:
+  ```
+  ENGINE: dj_db_conn_pool.backends.mysql
+  NAME: production_db
+  USER: db_user
+  PASSWORD: strong_password
+  HOST: prod-db.example.com
+  PORT: 3306
+  POOL_SIZE: 20
+  MAX_OVERFLOW: 10
+  ```
+- **Backups**: Daily automated backups
+- **Encryption**: Enable SSL/TLS connections
+
+#### Redis Broker
+
+- **Hosting**: AWS ElastiCache, Redis Cloud, or self-managed
+- **Configuration**:
+  ```
+  CELERY_BROKER_URL=redis://:password@prod-redis.example.com:6379/0
+  ```
+- **High Availability**: Use Redis Sentinel or Cluster
+- **Persistence**: AOF (Append-Only File) enabled
+
+#### Celery Worker(s)
+
+- **Hosting**: Separate EC2 instances or container on Kubernetes
+- **Process Manager**: systemd or container orchestration
+- **Concurrency**: Adjust based on workload and machine resources
+- **Monitoring**: Track active tasks, failed tasks, and worker health
+
+**Celery Startup (Production)**:
+```bash
+poetry run celery -A config worker --loglevel=warning \
+  --concurrency=4 \
+  --prefetch-multiplier=4 \
+  --max-tasks-per-child=1000
+```
+
+### Production Environment Variables
+
+```bash
+# Django Core
+SECRET_KEY=<generate-a-very-long-random-string>
+DEBUG=False
+ALLOWED_HOSTS=api.example.com,example.com
+ASGI_APPLICATION=config.asgi.application
+
+# Database
+DB_NAME=prod_ecommerce
+DB_USER=prod_user
+DB_PASSWORD=<strong-random-password>
+DB_HOST=prod-db.example.com
+DB_PORT=3306
+
+# Redis / Celery
+CELERY_BROKER_URL=redis://:password@prod-redis.example.com:6379/0
+
+# CORS (React Frontend)
+CORS_ALLOWED_ORIGINS=https://example.com,https://www.example.com
+
+# Email (for future notifications)
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.sendgrid.net
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=apikey
+EMAIL_HOST_PASSWORD=<sendgrid-api-key>
+```
+
+### Production Checklist
+
+- [ ] `SECRET_KEY` is long, random, and never committed to repository
+- [ ] `DEBUG=False` in production
+- [ ] `ALLOWED_HOSTS` lists only your production domains
+- [ ] Database credentials use strong passwords
+- [ ] Database connections use SSL/TLS
+- [ ] Redis connections authenticated with password
+- [ ] Static files served from CDN (Cloudflare, CloudFront, etc.)
+- [ ] HTTPS enforced (SSL/TLS certificates from Let's Encrypt or similar)
+- [ ] Security headers configured (HSTS, CSP, etc.)
+- [ ] Monitoring and logging configured
+- [ ] Database backups automated and tested
+- [ ] Error tracking configured (Sentry, Rollbar, etc.)
+- [ ] Rate limiting and DDoS protection configured
+- [ ] Database indexes optimized for query patterns
+- [ ] Celery worker health monitoring in place
+
+### Scaling Considerations
+
+**Horizontal Scaling**:
+- Deploy multiple Daphne instances behind a load balancer
+- Deploy multiple Celery workers for increased task throughput
+- Use read replicas for MySQL (for reporting/analytics)
+
+**Vertical Scaling**:
+- Increase connection pool sizes as concurrent load increases
+- Adjust Celery concurrency based on worker machine resources
+- Monitor query performance and optimize slow queries
+
+**Monitoring**:
+- Track HTTP response times and error rates
+- Monitor task queue depth and worker utilization
+- Alert on database connection pool exhaustion
+- Monitor Redis memory usage and eviction
+
+## Database Migration Strategy
 
 ### Initial Deployment
 
-1. **Provision MySQL Database** on hosting provider
-2. **Set Environment Variables** in hosting provider dashboard
-3. **Deploy Application Code** (via Git push or CLI)
-4. **Run Migrations:**
-   ```bash
-   python manage.py migrate
-   ```
-5. **Create Superuser** (for Django admin):
-   ```bash
-   python manage.py createsuperuser
-   ```
-6. **Load Initial Data** (products, inventory):
-   ```bash
-   python manage.py shell
-   # Run product creation script from frontend-integration.md
-   ```
-
-### Subsequent Deployments
-
-When database schema changes (new models, fields, constraints):
-
-1. **Create Migration Locally:**
-   ```bash
-   poetry run python manage.py makemigrations
-   ```
-2. **Test Migration Locally:**
-   ```bash
-   poetry run python manage.py migrate
-   poetry run python manage.py test
-   ```
-3. **Commit Migration File:**
-   ```bash
-   git add */migrations/*.py
-   git commit -m "feat: add migration for X"
-   git push
-   ```
-4. **Deploy to Production** (triggers auto-deploy on Railway/Render)
-5. **Run Migration in Production:**
-   ```bash
-   # Railway:
-   railway run python manage.py migrate
-   
-   # Render:
-   # (Migrations auto-run if configured in render.yaml)
-   
-   # Manual SSH:
-   ssh user@server
-   cd /app
-   python manage.py migrate
-   ```
-
-**Migration Safety:**
-- Always test migrations locally first
-- Avoid destructive changes (DROP COLUMN, DROP TABLE) without backup
-- Use `--fake` flag only if you understand the consequences
-- For zero-downtime deployments, use additive migrations (new columns nullable or with defaults)
-
----
-
-## Health Check
-
-**Endpoint:** `GET /health/`
-
-**Expected Response:**
-```json
-{
-  "status": "ok"
-}
-```
-
-**Use Cases:**
-- Load balancer health check
-- Uptime monitoring (UptimeRobot, Pingdom, etc.)
-- CI/CD smoke test after deployment
-
-**Limitations:**
-- Does not verify database connectivity
-- Does not verify Redis/Celery (when added)
-- Consider adding `/api/health/` with database ping for deeper checks
-
----
-
-## Rollback Strategy
-
-### Railway/Render
-
-**Manual Rollback via Dashboard:**
-1. Navigate to deployment history
-2. Select previous successful deployment
-3. Click "Redeploy" or "Rollback"
-
-**Git-based Rollback:**
 ```bash
-# Revert last commit
-git revert HEAD
-git push
-
-# Or reset to previous commit (destructive)
-git reset --hard <previous-commit-hash>
-git push --force  # WARNING: only use if you understand the risk
+poetry run python manage.py migrate
 ```
 
-### AWS/Manual Deployment
+### Adding Migrations
 
-**Blue-Green Deployment (Recommended):**
-1. Deploy new version to separate environment (green)
-2. Test green environment
-3. Switch traffic to green via load balancer
-4. Keep blue environment for rollback
+1. Make model changes in Django
+2. Create migrations: `poetry run python manage.py makemigrations`
+3. Test migrations locally
+4. Commit to repository
+5. Deploy code, then run: `poetry run python manage.py migrate`
 
-**Direct Rollback:**
-1. Redeploy previous Docker image/EC2 AMI
-2. Revert database migrations if necessary (risky)
+### Zero-Downtime Migrations
 
-**Database Rollback:**
+For large tables in production:
+1. Add new column with default value
+2. Deploy code that uses both old and new columns
+3. Backfill data in background job
+4. Deploy code that removes old column references
+5. Remove old column in database
 
-**If migration broke database:**
-1. Restore from backup (requires pre-configured automated backups)
-2. Or manually reverse migration:
-   ```bash
-   python manage.py migrate orders <previous-migration-number>
-   ```
+## Health Checks and Monitoring
 
----
+### Liveness Check
 
-## Monitoring and Logging
+```bash
+curl http://localhost:8000/health/
+```
 
-**Not yet configured.** Production should include:
+Expected response (200 OK):
+```json
+{"status": "ok"}
+```
 
-1. **Application Logs:**
-   - Django logs to stdout (captured by Railway/Render)
-   - Structured logging (JSON) for parsing
-   - Log aggregation (CloudWatch, Datadog, Logtail)
+### Application Status
 
-2. **Error Tracking:**
-   - Sentry for exception monitoring
-   - Alerts on 500 errors
+- **Django System Check**: `poetry run python manage.py check`
+- **Database Connection**: Test query executes successfully
+- **Redis Connection**: `redis-cli ping` returns PONG
+- **Celery Worker**: `celery -A config inspect active` returns worker info
 
-3. **Performance Monitoring:**
-   - APM tool (New Relic, Scout, Elastic APM)
-   - Track slow queries, endpoint latency
+### Logs to Monitor
 
-4. **Uptime Monitoring:**
-   - External health check (UptimeRobot, Pingdom)
-   - Alerts on downtime
+- Django application errors
+- Celery task failures and retries
+- Database connection pool exhaustion
+- Redis connection errors
+- Slow query logs
 
-5. **Database Monitoring:**
-   - Connection pool usage
-   - Slow query log
-   - Disk space alerts
+## Rollback Procedure
 
----
+If a deployment causes issues:
 
-## Security Checklist
+1. **Identify the problem** via monitoring/logs
+2. **Revert code**: `git revert <commit-hash>` or redeploy previous version
+3. **Run migrations** if database changes were reverted: `poetry run python manage.py migrate`
+4. **Verify health checks** pass
+5. **Monitor** for continued issues
 
-**Before Production Deployment:**
+## Security Notes
 
-- [ ] `DEBUG = False` in production settings
-- [ ] `SECRET_KEY` is random and secret (not in Git)
-- [ ] Database password is strong and secret
-- [ ] HTTPS/TLS enabled (enforced)
-- [ ] `ALLOWED_HOSTS` restricted to actual domains (not `*`)
-- [ ] CORS origins restricted to frontend domain only
-- [ ] Database backups configured
-- [ ] Firewall rules limit database access
-- [ ] Django security middleware enabled (already in settings.py)
-- [ ] SQL injection prevented (ORM used throughout)
-- [ ] XSS prevented (DRF auto-escapes JSON)
-- [ ] CSRF protection enabled (Django default)
-- [ ] Rate limiting configured (future)
-- [ ] Input validation on all API endpoints (already implemented)
+- Never commit `.env` files or credentials
+- Use environment-specific configurations
+- Rotate database passwords regularly
+- Enable database audit logging
+- Use VPN or security groups to limit database access
+- Keep Python dependencies updated (run `poetry update` periodically)
+- Monitor security advisories for Django and dependencies
 
----
+## Troubleshooting
 
-## Manual Verification Steps (Post-Deployment)
+### Connection Pool Exhausted
 
-1. **Health Check:**
-   ```bash
-   curl https://your-domain.com/health/
-   ```
+**Error**: `QueuePool limit of size X overflow Y reached, connection timed out`
 
-2. **Product List:**
-   ```bash
-   curl https://your-domain.com/api/products/
-   ```
+**Solution**: Increase `POOL_SIZE` and `MAX_OVERFLOW` in database config
 
-3. **Create Order:**
-   ```bash
-   curl -X POST https://your-domain.com/api/orders/ \
-     -H "Content-Type: application/json" \
-     -d '{"items": [{"product_id": 1, "quantity": 1}]}'
-   ```
+### Redis Connection Refused
 
-4. **Verify Database Persistence:**
-   ```bash
-   # SSH into production server or use database client
-   mysql -u <user> -p <database>
-   SELECT * FROM orders_order ORDER BY id DESC LIMIT 1;
-   SELECT * FROM orders_orderitem WHERE order_id = <last_order_id>;
-   SELECT * FROM inventory_inventory WHERE product_id = 1;
-   # Verify quantity_reserved was incremented
-   ```
+**Error**: `ConnectionError: Error 61 connecting to localhost:6379`
 
-5. **Frontend Integration:**
-   - Open frontend at `https://your-frontend-domain.com`
-   - Verify products load
-   - Place a test order
-   - Confirm order appears in database
+**Solution**: 
+- Verify Redis is running: `redis-cli ping`
+- Check Redis URL in `CELERY_BROKER_URL`
+- Verify network connectivity if Redis is remote
 
----
+### Task Not Dispatched
 
-## Deployment Blockers (Current Status)
+**Symptom**: Orders created but fulfillment tasks don't run
 
-**Cannot deploy to production until:**
+**Causes**:
+- Redis broker is down (check logs for connection errors)
+- Celery worker is not running
+- `transaction.on_commit()` callback failed silently
 
-1. **Hosting Environment Selected**
-   - Decision: Railway? AWS? Render? DigitalOcean?
-   - Recommendation: Railway for simplicity, AWS for scale
+**Solution**:
+- Verify Redis is running
+- Verify Celery worker is running and connected
+- Check Django application logs for dispatch failures
 
-2. **Database Provisioned**
-   - MySQL 8.0+ instance with persistent storage
-   - Automated backups configured
-   - Connection credentials generated
+### Slow Queries
 
-3. **Domain Registered (Optional but Recommended)**
-   - Register domain (e.g., `ecommerce-api.example.com`)
-   - Configure DNS A/CNAME records
-   - Or use hosting provider's subdomain (e.g., `yourapp.railway.app`)
+**Monitor**: Enable MySQL slow query log
 
-4. **Deployment Credentials Configured**
-   - GitHub Actions secrets for deployment (if using automated CD)
-   - Or manual deployment via CLI (Railway CLI, AWS CLI, etc.)
+```sql
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 2;
+```
 
-5. **Environment Variables Set**
-   - All production secrets configured in hosting provider dashboard
-   - `.env` file is NOT used in production (secrets in environment)
+**Optimize**: Add indexes on frequently queried columns:
+```sql
+CREATE INDEX idx_order_created_at ON orders(created_at);
+CREATE INDEX idx_inventory_product_id ON inventory(product_id);
+```
 
-6. **Gunicorn / Production Server Configured**
-   - `Procfile` (for Railway/Render):
-     ```
-     web: gunicorn config.wsgi:application --workers 4 --bind 0.0.0.0:$PORT
-     ```
-   - Or `Dockerfile` for containerized deployment
+## Disaster Recovery
 
----
+### Database Loss
 
-## Next Steps for Production Deployment
+1. Restore from backup
+2. Re-run migrations if backup is before latest migration
+3. Verify data integrity
 
-1. **Choose Hosting Provider** → I recommend Railway for MVP
-2. **Provision MySQL Database** → Via Railway or separate service
-3. **Add `Procfile`** → Define how to run the application
-4. **Set Environment Variables** → In Railway dashboard
-5. **Connect GitHub Repository** → Enable auto-deploy on push to `main`
-6. **Deploy** → Push to main or manual deploy via CLI
-7. **Run Migrations** → `railway run python manage.py migrate`
-8. **Load Initial Data** → Create products via Django admin or shell
-9. **Update Frontend** → Point React app to production API URL
-10. **Test End-to-End** → Verify full user flow works
+### Redis Loss
 
----
+- Tasks in queue are lost (must be retried)
+- Celery persists task history to database
+- Retrieve failed order IDs and manually trigger fulfillment
 
-## Cost Estimate (Railway, MVP Scale)
+### Complete System Failure
 
-- **Railway Hobby Plan:** $5/month
-  - Includes: Web service, MySQL database, 500 hours/month
-  - Sufficient for MVP with <1000 requests/day
-- **Railway Pro Plan:** $20/month (if scaling beyond hobby limits)
-- **Domain Registration:** $10-15/year (optional)
-
----
-
-**Last Updated:** 2024-10-24  
-**Status:** CI configured, production deployment not yet started  
-**Deployment Target:** TBD (awaiting user decision on hosting provider)
+1. Restore from backups (database, code repository)
+2. Redeploy all services
+3. Re-run migrations
+4. Verify health checks
+5. Monitor for data consistency issues
