@@ -181,3 +181,20 @@ CELERY_RESULT_EXPIRES = 3600  # 1 hour
 # Worker settings
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+
+# ─────────────────────────────────────────────
+# PRODUCTION SECURITY
+# ─────────────────────────────────────────────
+if not DEBUG:
+    # HTTPS/SSL settings
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Security headers
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_SECURITY_POLICY = True
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # Allow only HTTPS in production
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
