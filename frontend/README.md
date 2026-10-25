@@ -22,12 +22,10 @@ Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-Default configuration:
-```env
-# In development with Vite proxy, requests to /api/ and /health/
-# are automatically proxied to http://localhost:8000
-VITE_API_BASE_URL=http://127.0.0.1:8000
-```
+
+Configuration strategy:
+- **Local Development**: Leave `VITE_API_BASE_URL` blank (`VITE_API_BASE_URL=`). The Vite dev server will proxy `/api` and `/health` requests to `http://localhost:8000`.
+- **Production (Vercel)**: Configure `VITE_API_BASE_URL` in your Vercel Project Settings (e.g. `https://api.yourdomain.com`). During `vite build`, this environment variable is baked into the static bundle.
 
 ### Run Development Server
 ```bash
@@ -37,7 +35,26 @@ The application will launch on **http://localhost:3000** (matching Django's `COR
 
 ---
 
-## 2. Available Commands
+## 2. Vercel Deployment
+
+### Project Settings
+- **Framework Preset**: Vite
+- **Root Directory**: `frontend`
+- **Build Command**: `npm run build` (or `tsc -b && vite build`)
+- **Output Directory**: `dist`
+- **Install Command**: `npm install`
+
+### Environment Variables
+Configure in Vercel Dashboard -> Settings -> Environment Variables:
+- `VITE_API_BASE_URL`: URL of the deployed Django backend (e.g. `https://api.your-logistics-domain.com`).
+  - *Note: Leave blank only if you have configured Vercel rewrites to proxy `/api` to your backend on the same domain.*
+
+### SPA Rewrites
+`frontend/vercel.json` provides standard single-page app rewrites ensuring deep paths resolve to `/index.html`.
+
+---
+
+## 3. Available Commands
 
 | Command | Action |
 |---|---|
@@ -49,7 +66,7 @@ The application will launch on **http://localhost:3000** (matching Django's `COR
 
 ---
 
-## 3. Real Backend API Integration
+## 4. Real Backend API Integration
 
 The frontend connects to the following genuine endpoints:
 
@@ -71,7 +88,7 @@ The frontend connects to the following genuine endpoints:
 
 ---
 
-## 4. Navigation & Feature Status
+## 5. Navigation & Feature Status
 
 | Section | Status | Data Source / Description |
 |---|---|---|
@@ -87,7 +104,7 @@ The frontend connects to the following genuine endpoints:
 
 ---
 
-## 5. Architectural Guarantees & Constraints
+## 6. Architectural Guarantees & Constraints
 
 1. **Backend is the Sole Source of Truth:**
    The frontend never computes authoritative prices, order totals, or stock reservations. Client-side numbers are labeled as preliminary estimates.
