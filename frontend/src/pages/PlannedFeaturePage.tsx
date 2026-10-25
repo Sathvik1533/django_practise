@@ -134,56 +134,56 @@ export const PlannedFeaturePage: React.FC<PlannedFeaturePageProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-5">
       {/* Planned Badge & Header */}
-      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 sm:p-8 shadow-xl">
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" />
+      <div className="bg-white rounded border border-[#E5E5E2] p-6 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2 mb-2.5">
+          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#FFFBEB] text-[#B45309] border border-[#FEF3C7] font-semibold flex items-center gap-1.5">
+            <Clock className="h-3 w-3" />
             PLANNED • NOT YET AVAILABLE
           </span>
-          <span className="text-xs text-slate-500 font-mono">
+          <span className="text-xs text-[#71717A] font-mono">
             {spec.category} • {spec.stage}
           </span>
         </div>
 
-        <h2 className="text-2xl font-bold text-white tracking-tight">
+        <h1 className="text-xl font-bold text-[#242424] tracking-tight">
           {spec.title}
-        </h2>
+        </h1>
 
-        <p className="mt-2 text-sm text-slate-300 leading-relaxed max-w-2xl">
+        <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed max-w-2xl">
           {spec.description}
         </p>
 
         {/* Honest Disclosure */}
-        <div className="mt-6 p-4 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs text-slate-400 flex items-start space-x-3">
-          <ShieldAlert className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="mt-5 p-3.5 rounded bg-[#F8F7F4] border border-[#E5E5E2] text-xs text-[#71717A] flex items-start space-x-2.5">
+          <ShieldAlert className="h-4 w-4 text-[#D97706] shrink-0 mt-0.5" />
           <div>
-            <span className="font-semibold text-slate-200 block">
+            <span className="font-semibold text-[#242424] block">
               Architectural Honesty Disclosure
             </span>
             <p className="mt-0.5 leading-relaxed">
-              In accordance with enterprise engineering standards, mock datasets and fictional interactive controls are withheld.
-              This interface will automatically activate once the backend endpoints are implemented and committed by the backend team.
+              In accordance with operational standards, mock data and simulated controls are withheld.
+              This interface will activate once the backend endpoints are implemented.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Technical Requirements & Planned API Contracts */}
+      {/* Technical Specifications */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Planned Endpoints */}
-        <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-          <div className="flex items-center space-x-2 text-indigo-400 font-semibold text-xs">
+        <div className="bg-white rounded border border-[#E5E5E2] p-4 shadow-sm space-y-2.5">
+          <div className="flex items-center space-x-2 text-[#E96832] font-semibold text-xs">
             <Terminal className="h-4 w-4" />
             <span>Planned API Endpoints</span>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {spec.plannedEndpoints.map((ep, i) => (
               <div
                 key={i}
-                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300"
+                className="px-2.5 py-1.5 rounded bg-[#F8F7F4] border border-[#E5E5E2] font-mono text-[11px] text-[#242424]"
               >
                 {ep}
               </div>
@@ -192,16 +192,16 @@ export const PlannedFeaturePage: React.FC<PlannedFeaturePageProps> = ({
         </div>
 
         {/* Backend Dependencies */}
-        <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-          <div className="flex items-center space-x-2 text-sky-400 font-semibold text-xs">
+        <div className="bg-white rounded border border-[#E5E5E2] p-4 shadow-sm space-y-2.5">
+          <div className="flex items-center space-x-2 text-[#71717A] font-semibold text-xs">
             <Clock className="h-4 w-4" />
             <span>Backend Implementation Dependencies</span>
           </div>
 
-          <ul className="space-y-2 text-xs text-slate-400">
+          <ul className="space-y-1.5 text-xs text-[#71717A]">
             {spec.backendDependencies.map((dep, i) => (
               <li key={i} className="flex items-start space-x-2">
-                <span className="text-indigo-400 font-bold">•</span>
+                <span className="text-[#E96832] font-bold">•</span>
                 <span>{dep}</span>
               </li>
             ))}
@@ -209,34 +209,34 @@ export const PlannedFeaturePage: React.FC<PlannedFeaturePageProps> = ({
         </div>
       </div>
 
-      {/* Return to Live Features CTA */}
-      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Return to Live Workflows */}
+      <div className="bg-white rounded border border-[#E5E5E2] p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
         <div>
-          <h4 className="text-xs font-semibold text-white">
-            Explore Active Vertical Slices
+          <h4 className="text-xs font-semibold text-[#242424]">
+            Active Logistics Operations
           </h4>
-          <p className="text-[11px] text-slate-400">
-            Interact with the verified product catalogue and transactional order creator.
+          <p className="text-[11px] text-[#71717A]">
+            Manage inventory or create orders with live database stock reservation.
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           <button
             type="button"
             onClick={() => onNavigate('products')}
-            className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5"
+            className="px-3 py-1.5 rounded bg-white hover:bg-[#F8F7F4] text-[#242424] text-xs font-medium border border-[#E5E5E2] transition flex items-center space-x-1.5"
           >
-            <Boxes className="h-3.5 w-3.5 text-indigo-400" />
+            <Boxes className="h-3.5 w-3.5 text-[#E96832]" />
             <span>Products</span>
           </button>
 
           <button
             type="button"
             onClick={() => onNavigate('orders')}
-            className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition flex items-center space-x-1.5"
+            className="px-3 py-1.5 rounded bg-[#E96832] hover:bg-[#D45722] text-white text-xs font-semibold shadow-sm transition flex items-center space-x-1.5"
           >
             <ShoppingCart className="h-3.5 w-3.5" />
-            <span>Orders Demo</span>
+            <span>Orders</span>
             <ArrowRight className="h-3 w-3" />
           </button>
         </div>

@@ -1,127 +1,90 @@
 import React from 'react';
-import { Menu, Activity, RefreshCw, Database } from 'lucide-react';
-import type { BackendHealthResponse } from '../types/api';
+import { Menu, Plus, Package } from 'lucide-react';
 import type { NavTabId } from './Sidebar';
 
 interface TopNavProps {
   currentTab: NavTabId;
+  onSelectTab: (tab: NavTabId) => void;
   onOpenMobile: () => void;
-  health: BackendHealthResponse | null;
-  healthLoading: boolean;
-  onRefreshHealth: () => void;
 }
-
-const TAB_TITLES: Record<NavTabId, { title: string; subtitle: string }> = {
-  overview: {
-    title: 'Operations Overview',
-    subtitle: 'High-level status of the e-commerce logistics engine',
-  },
-  products: {
-    title: 'Products & Inventory',
-    subtitle: 'Real warehouse catalogue backed by MySQL InnoDB',
-  },
-  orders: {
-    title: 'Orders Management',
-    subtitle: 'Atomic order placement with row-level stock reservation',
-  },
-  'inventory-alerts': {
-    title: 'Inventory Alerts',
-    subtitle: 'Automated threshold notifications and replenishment triggers',
-  },
-  fulfillment: {
-    title: 'Fulfillment & Dispatch',
-    subtitle: 'Warehouse packing and carrier handoff operations',
-  },
-  tracking: {
-    title: 'Delivery Tracking',
-    subtitle: 'Real-time courier telemetry and consignment monitoring',
-  },
-  customers: {
-    title: 'Customer Directory',
-    subtitle: 'Account profiles and multi-tenant order histories',
-  },
-  reports: {
-    title: 'Reports & Analytics',
-    subtitle: 'Throughput statistics, inventory turnover, and fulfillment SLAs',
-  },
-  settings: {
-    title: 'System Settings',
-    subtitle: 'Application configuration, database pool, and environment parameters',
-  },
-};
 
 export const TopNav: React.FC<TopNavProps> = ({
   currentTab,
+  onSelectTab,
   onOpenMobile,
-  health,
-  healthLoading,
-  onRefreshHealth,
 }) => {
-  const current = TAB_TITLES[currentTab] || {
-    title: 'Dashboard',
-    subtitle: 'Logistics Engine',
-  };
-
-  const isHealthy = health?.status === 'ok';
-
   return (
-    <header className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      {/* Left: Mobile Menu button + Title */}
+    <header className="sticky top-0 z-20 bg-white border-b border-[#E5E5E2] px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+      {/* Left: Mobile Menu button + Brand */}
       <div className="flex items-center space-x-3">
         <button
           type="button"
           onClick={onOpenMobile}
-          className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800"
+          className="md:hidden p-1.5 rounded text-[#71717A] hover:text-[#242424] hover:bg-[#F8F7F4] border border-[#E5E5E2]"
           aria-label="Open navigation menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
 
-        <div>
-          <h1 className="text-base font-bold text-white tracking-tight">
-            {current.title}
-          </h1>
-          <p className="text-xs text-slate-400 hidden sm:block">
-            {current.subtitle}
-          </p>
+        <div className="flex items-center space-x-2">
+          <div className="h-7 w-7 rounded bg-[#E96832] flex items-center justify-center text-white shrink-0">
+            <Package className="h-4 w-4" />
+          </div>
+          <div>
+            <span className="font-semibold text-sm tracking-tight text-[#242424]">
+              <span className="sm:hidden">Logistics</span>
+              <span className="hidden sm:inline">Logistics Operations</span>
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Right: Architecture & Status Badges */}
-      <div className="flex items-center space-x-3">
-        <div className="hidden lg:flex items-center space-x-2 text-xs px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400">
-          <Database className="h-3.5 w-3.5 text-indigo-400" />
-          <span className="font-mono text-[11px]">MySQL 8 • InnoDB Locking</span>
-        </div>
-
+      {/* Center: Clean Primary Operational Tabs (Desktop) */}
+      <div className="hidden sm:flex items-center space-x-1">
         <button
           type="button"
-          onClick={onRefreshHealth}
-          disabled={healthLoading}
-          className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-850 hover:border-slate-700 text-xs font-mono transition"
-          title="Click to re-ping GET /health/"
+          onClick={() => onSelectTab('products')}
+          className={`px-3 py-1.5 text-xs font-medium rounded transition ${
+            currentTab === 'products'
+              ? 'bg-[#FFF5F0] text-[#E96832] font-semibold'
+              : 'text-[#71717A] hover:text-[#242424] hover:bg-[#F8F7F4]'
+          }`}
         >
-          <Activity
-            className={`h-3.5 w-3.5 ${
-              healthLoading
-                ? 'animate-spin text-amber-400'
-                : isHealthy
-                ? 'text-emerald-400'
-                : 'text-rose-400'
-            }`}
-          />
-          <span className="text-slate-300">API:</span>
-          {healthLoading ? (
-            <span className="text-amber-400">Pinging...</span>
-          ) : isHealthy ? (
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Online
-            </span>
-          ) : (
-            <span className="text-rose-400 font-semibold">Offline</span>
-          )}
-          <RefreshCw className={`h-3 w-3 text-slate-500 hover:text-slate-300 ${healthLoading ? 'animate-spin' : ''}`} />
+          Products & Inventory
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectTab('orders')}
+          className={`px-3 py-1.5 text-xs font-medium rounded transition ${
+            currentTab === 'orders'
+              ? 'bg-[#FFF5F0] text-[#E96832] font-semibold'
+              : 'text-[#71717A] hover:text-[#242424] hover:bg-[#F8F7F4]'
+          }`}
+        >
+          Orders
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectTab('overview')}
+          className={`px-3 py-1.5 text-xs font-medium rounded transition ${
+            currentTab === 'overview'
+              ? 'bg-[#FFF5F0] text-[#E96832] font-semibold'
+              : 'text-[#71717A] hover:text-[#242424] hover:bg-[#F8F7F4]'
+          }`}
+        >
+          Overview
+        </button>
+      </div>
+
+      {/* Right: Primary Call to Action */}
+      <div className="flex items-center space-x-2">
+        <button
+          type="button"
+          onClick={() => onSelectTab('orders')}
+          className="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded text-xs font-semibold text-white bg-[#E96832] hover:bg-[#D45722] active:bg-[#BE4A1B] shadow-sm transition shrink-0"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span>Create order</span>
         </button>
       </div>
     </header>

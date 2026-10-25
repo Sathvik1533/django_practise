@@ -3,20 +3,51 @@
 @layer base {
   :root {
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --bg-page: #F8F7F4;
+    --surface: #FFFFFF;
+    --text-primary: #242424;
+    --text-secondary: #71717A;
+    --border-subtle: #E5E5E2;
+    --accent: #E96832;
+    --accent-hover: #D45722;
+    --accent-active: #BE4A1B;
+    --accent-tint: #FFF5F0;
+    --accent-border: #FCD8C8;
   }
   
-  body {
+  html, body {
     margin: 0;
     min-height: 100vh;
-    background-color: #0b0f19;
-    color: #f1f5f9;
+    overflow-x: hidden;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   #root {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: var(--bg-page);
+  }
+
+  ::selection {
+    background-color: #FCD8C8;
+    color: #242424;
+  }
+
+  /* Emil Kowalski Interaction Discipline */
+  button, [role="button"] {
+    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;
+  }
+
+  button:active:not(:disabled), [role="button"]:active:not([aria-disabled="true"]) {
+    transform: scale(0.97);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
